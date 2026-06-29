@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SCL-90 心理健康自评量表</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --primary: #7c5cff;
+      --primary-light: #f0edff;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+      --text: #2d2d3a;
+      --text-secondary: #6b6b7b;
+      --border: #e5e7f0;
+      --radius: 16px;
+      --shadow: 0 8px 30px rgba(124, 92, 255, 0.08);
+      --success: #00c864;
+      --warning: #ffb400;
+      --danger: #ff5050;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .disclaimer {
+      background: #fff8e1;
+      border-left: 4px solid var(--warning);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: #7a5c00;
+      margin-bottom: 24px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 50px;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #9a82ff);
+      color: white;
+      box-shadow: 0 4px 16px rgba(124, 92, 255, 0.3);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124, 92, 255, 0.4); }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { background: var(--primary-light); }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-share {
+      background: linear-gradient(135deg, #ff6b9d, #ff8e53);
+      color: white;
+      box-shadow: 0 4px 16px rgba(255, 107, 157, 0.3);
+      margin-left: 12px;
+    }
+
+    .btn-share:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4); }
+
+    /* Test page */
+    .test-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #9a82ff);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .question-box {
+      margin-bottom: 24px;
+    }
+
+    .question-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--card-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      width: 100%;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.1);
+    }
+
+    .option-label {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .option-btn.selected .option-label {
+      background: var(--primary);
+      color: white;
+    }
+
+    .option-text {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 32px;
+      gap: 12px;
+    }
+
+    .encouragement {
+      text-align: center;
+      color: var(--primary);
+      font-size: 0.95rem;
+      margin-top: 24px;
+      font-weight: 500;
+    }
+
+    /* Result page */
+    .result-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .overview-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .overview-card h4 {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .overview-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .overview-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .overview-card.normal .overview-value { color: var(--success); }
+    .overview-card.mild .overview-value { color: var(--warning); }
+    .overview-card.moderate .overview-value { color: #ff8800; }
+    .overview-card.severe .overview-value { color: var(--danger); }
+
+    .result-interpretation,
+    .result-chart,
+    .result-details,
+    .result-all {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-interpretation h3,
+    .result-chart h3,
+    .result-details h3,
+    .result-all h3 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .result-interpretation p {
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .dimension-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .dimension-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .dimension-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .dimension-rank {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .dimension-name {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .dimension-score {
+      margin-left: auto;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .severity-normal { background: rgba(0, 200, 100, 0.12); color: var(--success); }
+    .severity-mild { background: rgba(255, 180, 0, 0.12); color: #c28a00; }
+    .severity-moderate { background: rgba(255, 136, 0, 0.12); color: #c26800; }
+    .severity-severe { background: rgba(255, 80, 80, 0.12); color: var(--danger); }
+
+    .dimension-desc,
+    .dimension-advice {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      line-height: 1.7;
+    }
+
+    .dimension-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .dimension-table th,
+    .dimension-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dimension-table th {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .result-actions {
+      text-align: center;
+      margin: 24px 0 40px;
+    }
+
+    /* Auth & Share modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.hidden { display: none; }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 { font-size: 1.2rem; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .auth-error {
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      min-height: 20px;
+    }
+
+    .auth-purchase-link {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      color: var(--primary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .auth-purchase-link:hover {
+      text-decoration: underline;
+    }
+
+    .share-preview {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .share-preview img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .share-tip {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .share-loading {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--text-secondary);
+    }
+
+    /* Share card (hidden, used for screenshot) */
+    .share-card {
+      width: 375px;
+      height: 667px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8f6ff 100%);
+      border-radius: 0;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #2d2d3a;
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .share-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 220px;
+      height: 220px;
+      background: rgba(124, 92, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .share-card::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -60px;
+      width: 260px;
+      height: 260px;
+      background: rgba(255, 107, 157, 0.08);
+      border-radius: 50%;
+    }
+
+    .share-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .share-brand {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7c5cff, #ff6b9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .share-title {
+      font-size: 1.1rem;
+      color: #6b6b7b;
+      letter-spacing: 2px;
+    }
+
+    .share-score {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(124, 92, 255, 0.1);
+    }
+
+    .share-score-label {
+      font-size: 0.85rem;
+      color: #6b6b7b;
+      margin-bottom: 8px;
+    }
+
+    .share-score-value {
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: #7c5cff;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .share-score-value.normal { color: #00c864; }
+    .share-score-value.mild { color: #ffb400; }
+    .share-score-value.moderate { color: #ff8800; }
+    .share-score-value.severe { color: #ff5050; }
+
+    .share-score-level {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #6b6b7b;
+    }
+
+    .share-dimensions {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .share-dim-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .share-dim-name {
+      font-size: 0.85rem;
+      color: #2d2d3a;
+      font-weight: 500;
+    }
+
+    .share-dim-bar-wrap {
+      flex: 1;
+      margin: 0 10px;
+      height: 8px;
+      background: #f0f0f5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .share-dim-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #7c5cff, #ff6b9d);
+    }
+
+    .share-dim-score {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #7c5cff;
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .share-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .share-qr {
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .share-qr-pattern, .share-qr-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+      background: #2d2d3a;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .share-qr-img {
+      object-fit: contain;
+      background: #ffffff;
+      display: block;
+    }
+
+    .share-qr-img[src=""], .share-qr-img:not([src]) {
+      display: none;
+    }
+
+    .share-qr-pattern::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, transparent 8%, white 9%),
+        radial-gradient(circle at 80% 20%, transparent 8%, white 9%),
+        radial-gradient(circle at 20% 80%, transparent 8%, white 9%),
+        radial-gradient(circle at 50% 50%, transparent 4%, white 5%),
+        radial-gradient(circle at 30% 40%, transparent 3%, white 4%),
+        radial-gradient(circle at 70% 60%, transparent 3%, white 4%),
+        radial-gradient(circle at 40% 70%, transparent 3%, white 4%),
+        radial-gradient(circle at 60% 30%, transparent 3%, white 4%);
+      background-size: 100% 100%;
+    }
+
+    .share-qr-text {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: #6b6b7b;
+      white-space: nowrap;
+    }
+
+    .share-footer-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .share-footer-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2d2d3a;
+      margin-bottom: 4px;
+    }
+
+    .share-footer-desc {
+      font-size: 0.75rem;
+      color: #6b6b7b;
+      line-height: 1.5;
+    }
+
+    .share-disclaimer {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #9999a8;
+    }
+
+    /* History panel */
+    .history-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 10px 16px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      font-size: 0.85rem;
+      z-index: 100;
+    }
+
+    .history-panel {
+      position: fixed;
+      top: 0;
+      right: -360px;
+      width: 340px;
+      max-width: 90vw;
+      height: 100vh;
+      background: white;
+      box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s ease;
+      z-index: 200;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .history-panel.active { right: 0; }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .history-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .history-item {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .history-date {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .history-score {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .no-history {
+      text-align: center;
+      color: var(--text-secondary);
+      padding: 40px 0;
+    }
+
+    .delete-history {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .header h1 { font-size: 1.3rem; }
+      .card { padding: 20px; }
+      .question-text { font-size: 1.1rem; }
+      .result-overview { grid-template-columns: repeat(2, 1fr); }
+      .btn-share { margin-left: 0; margin-top: 12px; width: 100%; }
+      .result-actions { display: flex; flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 id="pageTitle">SCL-90 心理健康自评量表</h1>
+      <p id="pageSubtitle">专业心理测评工具，帮助您了解当前心理健康状况</p>
+    </header>
+    <p id="pageDisclaimer" class="disclaimer">本量表仅为心理健康筛查工具，测试结果仅供参考，不能替代临床诊断。</p>
+
+    <!-- Intro Page -->
+    <div id="introPage" class="page active">
+      <div class="card">
+        <h2 id="introTitle">欢迎来到 SCL-90 心理测评</h2>
+        <div id="introDesc">
+          <p>请根据您最近一周的真实感受作答。</p>
+        </div>
+        <div style="text-align: center; margin-top: 32px;">
+          <button id="startBtn" class="btn btn-primary">开始测试</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Page -->
+    <div id="testPage" class="page">
+      <div class="card">
+        <div class="test-header">
+          <span>进度</span>
+          <span><span id="currentQuestion">1</span> / <span id="totalQuestion">90</span></span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressBar" class="progress-fill" style="width: 1%;"></div>
+        </div>
+
+        <div class="question-box">
+          <div id="questionText" class="question-text">题目加载中...</div>
+          <div id="optionsContainer" class="options"></div>
+        </div>
+
+        <div class="nav-buttons">
+          <button id="prevBtn" class="btn btn-secondary" disabled>上一题</button>
+          <button id="nextBtn" class="btn btn-primary">下一题</button>
+        </div>
+
+        <p id="encouragement" class="encouragement"></p>
+      </div>
+    </div>
+
+    <!-- Result Page -->
+    <div id="resultPage" class="page">
+      <div id="resultContent"></div>
+      <div class="result-actions">
+        <button id="restartBtn" class="btn btn-primary">重新测试</button>
+        <button id="shareBtn" class="btn btn-share">生成分享图</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>需要授权码</h3>
+        <button id="closeModal" class="modal-close">&times;</button>
+      </div>
+      <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9rem;">
+        使用本测评需要授权码激活。请在购买平台获取授权码后输入。
+      </p>
+      <input id="codeInput" type="text" class="auth-input" placeholder="请输入授权码">
+      <div id="authError" class="auth-error"></div>
+      <button id="verifyBtn" class="btn btn-primary" style="width: 100%;">验证授权码</button>
+      <a id="purchaseLink" class="auth-purchase-link" target="_blank" rel="noopener">没有授权码？点击购买</a>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 380px;">
+      <div class="modal-header">
+        <h3>保存分享图</h3>
+        <button id="closeShareModal" class="modal-close">&times;</button>
+      </div>
+      <div id="shareLoading" class="share-loading">正在生成图片...</div>
+      <div id="sharePreview" class="share-preview" style="display:none;">
+        <img id="sharePreviewImg" src="" alt="分享图">
+      </div>
+      <p id="shareTip" class="share-tip" style="display:none;">长按图片保存，分享到朋友圈或小红书</p>
+      <div id="shareError" style="display:none; color: var(--danger); text-align: center; margin-bottom: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- Hidden Share Card -->
+  <div id="shareCard" class="share-card">
+    <div class="share-header">
+      <div class="share-brand">SCL-90</div>
+      <div class="share-title">心理健康测评报告</div>
+    </div>
+    <div class="share-score">
+      <div class="share-score-label">心理健康综合指数</div>
+      <div class="share-score-value" id="shareScoreValue">--</div>
+      <div class="share-score-level" id="shareScoreLevel">--</div>
+    </div>
+    <div class="share-dimensions" id="shareDimensions"></div>
+    <div class="share-footer">
+      <div class="share-qr">
+        <img id="shareQrImg" class="share-qr-img" src="" alt="二维码" crossorigin="anonymous">
+        <div id="shareQrPlaceholder" class="share-qr-pattern"></div>
+        <div class="share-qr-text">扫码测一测</div>
+      </div>
+      <div class="share-footer-info">
+        <div class="share-footer-title">测测你的心理状态</div>
+        <div class="share-footer-desc">SCL-90 自评量表<br>90 题快速筛查心理健康</div>
+      </div>
+    </div>
+    <div class="share-disclaimer">结果仅供参考，不能替代专业诊断</div>
+  </div>
+
+  <!-- History Panel -->
+  <button id="historyBtn" class="history-btn">历史记录</button>
+  <div id="historyPanel" class="history-panel">
+    <div class="history-header">
+      <h3>测试历史</h3>
+      <button id="historyClose" class="history-close">&times;</button>
+    </div>
+    <div id="historyList"></div>
+    <button id="deleteHistory" class="delete-history">清除所有历史</button>
+  </div>
+
+  <script>
+    // ============== 内嵌配置 ==============
+    const CONFIG = {
+      "meta": {
+        "id": "scl90",
+        "title": "SCL-90 心理健康自评量表",
+        "subtitle": "专业心理测评工具，帮助您了解当前心理健康状况",
+        "version": "1.0.0",
+        "disclaimer": "本量表仅为心理健康筛查工具，测试结果仅供参考，不能替代临床诊断。如有需要，请寻求专业心理医生或心理咨询师的帮助。"
+      },
+      "auth": {
+        "enabled": true,
+        "requireCode": true,
+        "maxUses": 3,
+        "validityDays": 3,
+        "purchaseUrl": "https://your-faka-platform.com/your-product"
+      },
+      "share": {
+        "brand": "SCL-90",
+        "title": "心理健康测评报告",
+        "footerTitle": "测测你的心理状态",
+        "footerDesc": "SCL-90 自评量表<br>90 题快速筛查心理健康",
+        "qrCodeUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyCAIAAABnRsZeAAAHo0lEQVR4nO3c0Y3jSBJAwenD2CMHzv5zoB3iecCPrVdbSSriXyJFqR+qgUT+XNf1B6Dzn/C9AGQF6DmtADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxUgJitATFaAmKwAsb8rL/58/vvnXX5//7fp896/8z7397zvrk5d95Rv+1u457QCxGQFiMkKEJMVICYrQExWgJisADFZAWKyAkyasr03c5Ly1DTkytTpymtXvoV9U8X7nsbKXe3z+2V/C04rQExWgJisADFZAWKyAsRkBYjJChCTFSAmK8BzpmxPTfjNnKScuet031192y7bFZ/X/S04rQAxWQFisgLEZAWIyQoQkxUgJitATFaAmKwAb5myfaJ9+1lXrrvifdOu+3b3vu9Z7eO0AsRkBYjJChCTFSAmK0BMVoCYrACyAszmtALEZAV4zpTtvunPe0+cwb03c+p05uzvzJ2yK5747TutADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrACxv982OXpqRnPl886cVz513ZmzsKc+0WfkJmOnFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxXgObts7z1x5+jMraJPfBozNwqfmoT+3fZrPzUX7rQCxGQFiMkKEJMVICYrQExWgJisADFZAWKyAnzHLttTW3Lvr/u+z/vE6d5TE7orfkdOje/jtALEZAWIyQoQkxUgJitATFaAmKwAMVkBYrICTJqynblH896+icZ993xqRvP+ujOnmU/9Jleexu/Iv5QVTitATFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQOznuq5//OJ9838r77zvtfdO3dXMp/HE3a5PfJL3Ts3gOq0AMVkBYrICxGQFiMkKICvAbE4rQExWgJisAM/ZZbvPzDnaffZ9oplPY+bE6syJ85nfr9MKEJMVICYrQExWgJisADFZAWKyAsRkBYjJCvCWKdt9k7Izd47OvO69fc95xamJ1RWfhWf1xA27TitATFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQOznuq6BmzK/7Z332TejuWLmDt2Z3+DM/cr3nFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQExWgElTtt9m5t7QU2bOd87cCjzzd7XvEzmtADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrACxvysvNjn67p2yK9f9tp3Bp77BmZxWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoBJU7b3Zk4WnprRXLnuE/ezznznJz7Jz7Z73jcZ7LQCxGQFiMkKEJMVQFaA2ZxWgJisADFZAWKyAjxnyvZ9846nzNxlO3On7BOnXZ84VXzPaQWIyQoQkxUgJitATFaAmKwAMVkBYrICxGQFeMuU7fvMnDrdt6/01GzoyjufuqvPodeempN2WgFisgLEZAWIyQoQkxUgJitATFaAmKwAMVkBYqZsH7BV9NT87qnZ0JW7unfqnt/327jntALEZAWIyQoQkxUgJitATFaAmKwAMVkBYrICvGXKdt/M4imnpj9XzJzRPPXbOPUtPPGu7jmtADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrADPmbKdOf83c7frvX2bX1fu+dTm132e+Iv9HfmcnVaAmKwAMVkBYrICxGQFiMkKEJMVICYrQExWgNjPdV31ewJfzWkFiMkKEJMVICYrQExWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxXgT+v/2ATa09e6jOgAAAAASUVORK5CYII="
+      },
+      "ui": {
+        "primaryColor": "#7c5cff",
+        "optionLabels": ["A", "B", "C", "D", "E"]
+      },
+      "options": [
+        { "text": "从无", "value": 1, "label": "A" },
+        { "text": "很轻", "value": 2, "label": "B" },
+        { "text": "中等", "value": 3, "label": "C" },
+        { "text": "偏重", "value": 4, "label": "D" },
+        { "text": "严重", "value": 5, "label": "E" }
+      ],
+      "questions": [
+        "头痛", "严重神经过敏，心神不定", "头脑中有不必要的想法或字句盘旋", "头晕或晕倒", "对异性的兴趣减退",
+        "对旁人责备求全", "感到别人能控制您的思想", "责怪别人制造麻烦", "忘记性大", "担心自己的衣饰整齐及仪态的端正",
+        "容易烦恼和激动", "胸痛", "害怕空旷的场所或街道", "感到自己的精力下降，活动减慢", "想结束自己的生命",
+        "听到旁人听不到的声音", "发抖", "感到大多数人都不可信任", "胃口不好", "容易哭泣",
+        "同异性相处时感到害羞不自在", "感到受骗，中了圈套或有人想抓住您", "无缘无故地突然感到害怕", "自己不能控制地大发脾气", "怕单独出门",
+        "经常责怪自己", "腰痛", "感到难以完成任务", "感到孤独", "感到苦闷",
+        "过分担忧", "对事物不感兴趣", "感到害怕", "您的感情容易受到伤害", "旁人能知道您的私下想法",
+        "感到别人不理解您、不同情您", "感到人们对您不友好，不喜欢您", "做事必须做得很慢以保证做得正确", "心跳得很厉害", "恶心或胃部不舒服",
+        "感到比不上他人", "肌肉酸痛", "感到有人在监视您、谈论您", "难以入睡", "做事必须反复检查",
+        "难以做出决定", "怕乘电车、公共汽车、地铁或火车", "呼吸有困难", "一阵阵发冷或发热", "因为感到害怕而避开某些东西、场合或活动",
+        "脑子变空了", "身体发麻或刺痛", "喉咙有梗塞感", "感到对前途没有希望", "不能集中注意力",
+        "感到身体的某一部分软弱无力", "感到紧张或容易紧张", "感到手或脚发重", "想到死亡的事", "吃得太多",
+        "当别人看着您或谈论您时感到不自在", "有一些不属于您自己的想法", "有想打人或伤害他人的冲动", "醒得太早", "必须反复洗手、点数目或触摸某些东西",
+        "睡得不稳不深", "有想摔坏或破坏东西的冲动", "有一些别人没有的想法或念头", "感到对别人神经过敏", "在商店或电影院等人多的地方感到不自在",
+        "感到任何事情都很困难", "一阵阵恐惧或惊恐", "感到在公共场合吃东西很不舒服", "经常与人争论", "单独一人时神经很紧张",
+        "别人对您的成绩没有做出恰当的评价", "即使和别人在一起也感到孤单", "感到坐立不安、心神不定", "感到自己没有什么价值", "感到熟悉的东西变成陌生或不像是真的",
+        "大叫或摔东西", "害怕会在公共场合昏倒", "感到别人想占您的便宜", "为一些有关性的想法而很苦恼", "您认为应该因为自己的过错而受到惩罚",
+        "感到要赶快把事情做完", "感到自己的身体有严重问题", "从未感到和其他人很亲近", "感到自己有罪", "感到自己的脑子有毛病"
+      ],
+      "dimensions": [
+        {
+          "name": "躯体化",
+          "indices": [0, 3, 11, 26, 39, 41, 47, 48, 51, 52, 55, 57],
+          "description": "反映主观的身体不适感，包括心血管、胃肠道、呼吸等系统不适，以及头痛、背痛、肌肉酸痛等其他躯体表现。",
+          "advice": "建议学习身心放松技巧，保持规律运动，必要时进行医学检查排除器质性问题，同时寻求心理咨询处理潜在的压力源。"
+        },
+        {
+          "name": "强迫症状",
+          "indices": [2, 8, 9, 27, 37, 44, 45, 50, 54, 64],
+          "description": "主要指那些明知没有必要，但又无法摆脱的无意义的思想、冲动和行为，以及一些比较一般的感知障碍。",
+          "advice": "可尝试暴露与反应预防技术，学习接纳不确定性，必要时寻求认知行为治疗或精神科专业评估。"
+        },
+        {
+          "name": "人际关系敏感",
+          "indices": [5, 20, 33, 35, 36, 40, 60, 68, 72],
+          "description": "指某些个人不自在感与自卑感，尤其是在与其他人相比较时更为突出，包括自卑、懊丧以及在人际关系中明显相处不好。",
+          "advice": "识别并挑战负面自我评价，逐步进行社交暴露练习，建立2-3段支持性关系，必要时通过心理咨询探索早期经验的影响。"
+        },
+        {
+          "name": "抑郁症状",
+          "indices": [4, 13, 14, 19, 21, 25, 28, 29, 30, 31, 53, 70, 78],
+          "description": "反映与临床上抑郁症状群相联系的广泛概念，包括忧郁苦闷的感情和心境，对生活的兴趣减退，缺乏活动的愿望，丧失活动力等。",
+          "advice": "保持规律作息与适度运动，主动安排愉快活动，与信任的人倾诉感受。若症状持续，务必寻求专业心理咨询师或精神科医生的帮助。"
+        },
+        {
+          "name": "焦虑症状",
+          "indices": [1, 16, 22, 32, 38, 56, 71, 77, 79, 85],
+          "description": "指那些无法静息、神经过敏、紧张以及由此产生的躯体征象，如震颤、游离不定的焦虑及惊恐发作。",
+          "advice": "练习深呼吸、正念冥想、渐进式肌肉放松，减少咖啡因和酒精摄入，保持规律睡眠。若焦虑明显影响生活，建议寻求专业心理咨询。"
+        },
+        {
+          "name": "敌对症状",
+          "indices": [10, 23, 62, 66, 73, 80],
+          "description": "主要从思想、感情及行为三方面来反映敌对表现，包括厌烦、争论、摔物、争斗和不可抑制的冲动爆发等方面。",
+          "advice": "学习情绪识别和暂停技术，在情绪高峰时先离开情境，找到健康宣泄方式（如运动、书写），必要时寻求心理咨询改善情绪调节能力。"
+        },
+        {
+          "name": "恐怖症状",
+          "indices": [12, 24, 46, 49, 69, 74, 81],
+          "description": "与传统的恐怖状态或广场恐怖所反映的内容基本一致，恐惧的对象包括出门旅行、空旷场地、人群或公共场所和交通工具。",
+          "advice": "可尝试系统脱敏或逐步暴露练习，配合放松训练降低焦虑反应，寻求专业心理治疗制定个性化暴露计划。"
+        },
+        {
+          "name": "偏执症状",
+          "indices": [7, 17, 42, 67, 75, 82],
+          "description": "主要指猜疑和关系妄想等，包括投射性思维、敌对、猜疑、关系妄想、被动体验和夸大等。",
+          "advice": "与信任的人核实自己的想法，练习多角度解释事件，减少孤立状态。若猜疑严重且固定，应及时寻求精神科医生或心理咨询师评估。"
+        },
+        {
+          "name": "精神病性",
+          "indices": [6, 15, 34, 61, 76, 83, 84, 86, 87, 89],
+          "description": "包括幻听、思维播散、被控制感、思维被插入等精神分裂样症状，以及一些反映精神分裂样症状的项目。",
+          "advice": "该维度得分较高时，强烈建议尽快寻求精神科医生专业评估，告知信任的家人或朋友，遵医嘱进行系统评估和治疗。"
+        }
+      ],
+      "scoring": {
+        "totalScore": {
+          "max": 450,
+          "min": 90,
+          "levels": [
+            { "max": 160, "severity": "normal", "label": "正常" },
+            { "max": 200, "severity": "mild", "label": "轻度" },
+            { "max": 300, "severity": "moderate", "label": "中度" },
+            { "max": 450, "severity": "severe", "label": "重度" }
+          ]
+        },
+        "averageScore": {
+          "levels": [
+            { "max": 1.5, "severity": "normal", "label": "正常" },
+            { "max": 2.5, "severity": "mild", "label": "轻度" },
+            { "max": 3.5, "severity": "moderate", "label": "中度" },
+            { "max": 5.0, "severity": "severe", "label": "重度" }
+          ]
+        },
+        "positiveThreshold": 1.5
+      },
+      "interpretation": {
+        "normal": "根据本次测评结果，您的心理健康状况整体处于<strong>正常范围</strong>。心理健康综合指数为<strong>{index}分</strong>，说明您目前的心理调适能力良好，能够有效应对日常生活中的压力与挑战。",
+        "mild": "根据本次测评结果，您的心理健康状况呈现<strong>轻度异常</strong>。心理健康综合指数为<strong>{index}分</strong>，提示您可能正经历一些心理压力或不适，但这些症状通常尚未严重影响日常生活。",
+        "moderate": "根据本次测评结果，您的心理健康状况呈现<strong>中度异常</strong>。心理健康综合指数为<strong>{index}分</strong>，提示您存在较为明显的心理症状，建议给予足够重视并积极寻求改善。",
+        "severe": "根据本次测评结果，您的心理健康状况呈现<strong>重度异常</strong>。心理健康综合指数为<strong>{index}分</strong>，提示您存在较严重的心理症状，强烈建议尽快寻求专业心理医生或精神科医生的帮助。"
+      }
+    };
+
+    // ============== 全局状态 ==============
+    const state = {
+      config: CONFIG,
+      answers: [],
+      currentIndex: 0,
+      testStarted: false,
+      testFinished: false,
+      authPassed: false,
+      inputCode: '',
+      testCode: 'single',
+      lastResult: null
+    };
+
+    // ============== DOM 元素缓存 ==============
+    const dom = {};
+
+    // ============== 初始化 ==============
+    function init() {
+      cacheDOM();
+      bindEvents();
+
+      document.title = state.config.meta.title;
+      dom.title.textContent = state.config.meta.title;
+      dom.subtitle.textContent = state.config.meta.subtitle;
+      dom.disclaimer.textContent = state.config.meta.disclaimer;
+
+      state.answers = new Array(state.config.questions.length).fill(0);
+      state.testCode = extractTestCode();
+
+      renderIntro();
+
+      if (state.config.auth.enabled && state.config.auth.requireCode) {
+        showAuthModal();
+      } else {
+        state.authPassed = true;
+      }
+    }
+
+    function cacheDOM() {
+      dom.introPage = document.getElementById('introPage');
+      dom.testPage = document.getElementById('testPage');
+      dom.resultPage = document.getElementById('resultPage');
+      dom.pages = [dom.introPage, dom.testPage, dom.resultPage];
+
+      dom.title = document.getElementById('pageTitle');
+      dom.subtitle = document.getElementById('pageSubtitle');
+      dom.disclaimer = document.getElementById('pageDisclaimer');
+      dom.introTitle = document.getElementById('introTitle');
+      dom.introDesc = document.getElementById('introDesc');
+      dom.startBtn = document.getElementById('startBtn');
+
+      dom.questionText = document.getElementById('questionText');
+      dom.currentQuestion = document.getElementById('currentQuestion');
+      dom.totalQuestion = document.getElementById('totalQuestion');
+      dom.progressBar = document.getElementById('progressBar');
+      dom.optionsContainer = document.getElementById('optionsContainer');
+      dom.prevBtn = document.getElementById('prevBtn');
+      dom.nextBtn = document.getElementById('nextBtn');
+      dom.encouragement = document.getElementById('encouragement');
+
+      dom.resultContent = document.getElementById('resultContent');
+      dom.restartBtn = document.getElementById('restartBtn');
+      dom.shareBtn = document.getElementById('shareBtn');
+      dom.historyBtn = document.getElementById('historyBtn');
+      dom.historyPanel = document.getElementById('historyPanel');
+      dom.historyClose = document.getElementById('historyClose');
+      dom.historyList = document.getElementById('historyList');
+      dom.deleteHistory = document.getElementById('deleteHistory');
+
+      dom.authModal = document.getElementById('authModal');
+      dom.codeInput = document.getElementById('codeInput');
+      dom.verifyBtn = document.getElementById('verifyBtn');
+      dom.authError = document.getElementById('authError');
+      dom.closeModal = document.getElementById('closeModal');
+      dom.purchaseLink = document.getElementById('purchaseLink');
+
+      dom.shareModal = document.getElementById('shareModal');
+      dom.closeShareModal = document.getElementById('closeShareModal');
+      dom.shareLoading = document.getElementById('shareLoading');
+      dom.sharePreview = document.getElementById('sharePreview');
+      dom.sharePreviewImg = document.getElementById('sharePreviewImg');
+      dom.shareTip = document.getElementById('shareTip');
+      dom.shareError = document.getElementById('shareError');
+
+      dom.shareCard = document.getElementById('shareCard');
+      dom.shareScoreValue = document.getElementById('shareScoreValue');
+      dom.shareScoreLevel = document.getElementById('shareScoreLevel');
+      dom.shareDimensions = document.getElementById('shareDimensions');
+      dom.shareQrImg = document.getElementById('shareQrImg');
+      dom.shareQrPlaceholder = document.getElementById('shareQrPlaceholder');
+    }
+
+    function bindEvents() {
+      dom.startBtn.addEventListener('click', startTest);
+      dom.prevBtn.addEventListener('click', goPrev);
+      dom.nextBtn.addEventListener('click', goNext);
+      dom.restartBtn.addEventListener('click', restartTest);
+      dom.shareBtn.addEventListener('click', generateShareImage);
+      dom.historyBtn.addEventListener('click', () => { loadHistory(); dom.historyPanel.classList.add('active'); });
+      dom.historyClose.addEventListener('click', () => dom.historyPanel.classList.remove('active'));
+      dom.deleteHistory.addEventListener('click', clearHistory);
+
+      dom.verifyBtn.addEventListener('click', verifyAuthCode);
+      dom.closeModal.addEventListener('click', () => dom.authModal.classList.add('hidden'));
+      dom.codeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyAuthCode(); });
+
+      dom.closeShareModal.addEventListener('click', hideShareModal);
+      dom.shareModal.addEventListener('click', (e) => { if (e.target === dom.shareModal) hideShareModal(); });
+      dom.authModal.addEventListener('click', (e) => { if (e.target === dom.authModal) dom.authModal.classList.add('hidden'); });
+    }
+
+    // ============== 工具函数 ==============
+    function extractTestCode() {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code') || url.pathname.split('/').filter(Boolean).pop();
+        return code || 'single';
+      } catch (e) {
+        return 'single';
+      }
+    }
+
+    function formatDate(isoString) {
+      const d = new Date(isoString);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function getSeverity(score, type) {
+      const levels = state.config.scoring[type === 'total' ? 'totalScore' : 'averageScore'].levels;
+      for (const level of levels) {
+        if (score <= level.max) return level;
+      }
+      return levels[levels.length - 1];
+    }
+
+    function calculateMentalHealthIndex(totalScore) {
+      const min = state.config.scoring.totalScore.min;
+      const max = state.config.scoring.totalScore.max;
+      if (totalScore <= min) return 100;
+      if (totalScore >= max) return 0;
+      return Math.round(100 - ((totalScore - min) / (max - min)) * 100);
+    }
+
+    // ============== 页面渲染 ==============
+    function goToPage(index) {
+      dom.pages.forEach((page, i) => {
+        page.classList.toggle('active', i === index);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderIntro() {
+      dom.introTitle.textContent = state.config.meta.title;
+      dom.introDesc.innerHTML = `
+        <p>本测试共 ${state.config.questions.length} 题，预计用时 5-8 分钟。</p>
+        <p>请根据您最近一周的实际感受作答，每题选择一个最符合的选项。</p>
+      `;
+    }
+
+    function showAuthModal() {
+      dom.authModal.classList.remove('hidden');
+      setTimeout(() => dom.codeInput.focus(), 100);
+
+      const purchaseUrl = state.config.auth.purchaseUrl || '';
+      if (purchaseUrl && dom.purchaseLink) {
+        dom.purchaseLink.href = purchaseUrl;
+        dom.purchaseLink.style.display = 'block';
+      } else if (dom.purchaseLink) {
+        dom.purchaseLink.style.display = 'none';
+      }
+    }
+
+    function hideShareModal() {
+      dom.shareModal.classList.add('hidden');
+      dom.shareLoading.style.display = 'block';
+      dom.sharePreview.style.display = 'none';
+      dom.shareTip.style.display = 'none';
+      dom.shareError.style.display = 'none';
+      dom.sharePreviewImg.src = '';
+    }
+
+    /**
+     * 本地授权码校验（弱限制）
+     */
+    function verifyAuthCode() {
+      const code = dom.codeInput.value.trim();
+      if (!code) {
+        dom.authError.textContent = '请输入授权码';
+        return;
+      }
+
+      const key = `shell_auth_${code}`;
+      const now = Date.now();
+      const maxUses = state.config.auth.maxUses || 3;
+      const validityDays = state.config.auth.validityDays || 3;
+      const validityMs = validityDays * 24 * 60 * 60 * 1000;
+
+      let record = null;
+      try {
+        record = JSON.parse(localStorage.getItem(key) || 'null');
+      } catch (e) { record = null; }
+
+      // 首次使用：初始化
+      if (!record) {
+        record = { code, firstUsed: now, usedCount: 0 };
+        localStorage.setItem(key, JSON.stringify(record));
+      }
+
+      // 检查有效期
+      if (now - record.firstUsed > validityMs) {
+        dom.authError.textContent = `授权码已过期（有效期${validityDays}天）`;
+        return;
+      }
+
+      // 检查使用次数
+      if (record.usedCount >= maxUses) {
+        dom.authError.textContent = `该授权码已达到最大使用次数（${maxUses}次）`;
+        return;
+      }
+
+      record.usedCount += 1;
+      localStorage.setItem(key, JSON.stringify(record));
+
+      state.inputCode = code;
+      state.authPassed = true;
+      dom.authModal.classList.add('hidden');
+      dom.authError.textContent = '';
+
+      if (!state.testStarted) startTest();
+    }
+
+    function startTest() {
+      if (!state.authPassed && state.config.auth.enabled && state.config.auth.requireCode) {
+        showAuthModal();
+        return;
+      }
+      state.testStarted = true;
+      state.currentIndex = 0;
+      state.answers = new Array(state.config.questions.length).fill(0);
+      goToPage(1);
+      renderQuestion();
+    }
+
+    // ============== 题目引擎 ==============
+    function renderQuestion() {
+      const q = state.config.questions[state.currentIndex];
+      const total = state.config.questions.length;
+
+      dom.questionText.textContent = `${state.currentIndex + 1}. ${q}`;
+      dom.currentQuestion.textContent = state.currentIndex + 1;
+      dom.totalQuestion.textContent = total;
+      dom.progressBar.style.width = `${((state.currentIndex + 1) / total) * 100}%`;
+
+      dom.optionsContainer.innerHTML = '';
+      state.config.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (state.answers[state.currentIndex] === opt.value) {
+          btn.classList.add('selected');
+        }
+        btn.innerHTML = `<span class="option-label">${opt.label}</span><span class="option-text">${opt.text}</span>`;
+        btn.addEventListener('click', () => selectOption(opt.value));
+        dom.optionsContainer.appendChild(btn);
+      });
+
+      dom.prevBtn.disabled = state.currentIndex === 0;
+      dom.nextBtn.textContent = state.currentIndex === total - 1 ? '查看结果' : '下一题';
+
+      renderEncouragement(state.currentIndex, total);
+    }
+
+    function renderEncouragement(index, total) {
+      const messages = [
+        '慢慢来，每一个回答都很重要。',
+        '做得很好，继续保持。',
+        '您已经完成了一部分，坚持就是胜利。',
+        '感谢您的耐心，继续前进。',
+        '快一半了，您做得很棒！',
+        '已经过半，继续加油。',
+        '您正在深入了解自己，这非常有价值。',
+        '接近完成了，坚持到底。',
+        '几乎要完成了，再努力一下。',
+        '最后几步了，您做得非常好！'
+      ];
+      const segment = Math.min(Math.floor((index / total) * messages.length), messages.length - 1);
+      dom.encouragement.textContent = messages[segment];
+    }
+
+    function selectOption(value) {
+      state.answers[state.currentIndex] = value;
+      renderQuestion();
+      if (state.currentIndex < state.config.questions.length - 1) {
+        setTimeout(() => goNext(), 200);
+      }
+    }
+
+    function goPrev() {
+      if (state.currentIndex > 0) {
+        state.currentIndex--;
+        renderQuestion();
+      }
+    }
+
+    function goNext() {
+      if (state.currentIndex < state.config.questions.length - 1) {
+        state.currentIndex++;
+        renderQuestion();
+      } else {
+        submitTest();
+      }
+    }
+
+    function submitTest() {
+      state.answers = state.answers.map(v => v || 1);
+      const result = calculateResult();
+      state.lastResult = result;
+      saveResult(result);
+      renderResult(result);
+      state.testFinished = true;
+      goToPage(2);
+    }
+
+    // ============== 评分引擎 ==============
+    function calculateResult() {
+      const totalScore = state.answers.reduce((a, b) => a + b, 0);
+      const averageScore = totalScore / state.answers.length;
+
+      const positiveCount = state.answers.filter(v => v > 1).length;
+      const negativeCount = state.answers.length - positiveCount;
+      const positiveAverage = positiveCount > 0
+        ? (totalScore - state.answers.length) / positiveCount
+        : 0;
+
+      const totalSeverity = getSeverity(totalScore, 'total');
+      const averageSeverity = getSeverity(averageScore, 'average');
+
+      const dimensionsScores = state.config.dimensions.map(dim => {
+        const sum = dim.indices.reduce((acc, idx) => acc + state.answers[idx], 0);
+        const avg = sum / dim.indices.length;
+        const sev = getSeverity(avg, 'dimension');
+        return {
+          name: dim.name,
+          average: avg,
+          sum: sum,
+          severity: sev.severity,
+          label: sev.label,
+          description: dim.description,
+          advice: dim.advice
+        };
+      });
+
+      const mentalHealthIndex = calculateMentalHealthIndex(totalScore);
+      const sortedDimensions = [...dimensionsScores].sort((a, b) => b.average - a.average);
+
+      return {
+        date: new Date().toISOString(),
+        testCode: state.testCode,
+        inputCode: state.inputCode,
+        totalScore,
+        averageScore,
+        totalSeverity,
+        averageSeverity,
+        positiveCount,
+        negativeCount,
+        positiveAverage,
+        mentalHealthIndex,
+        dimensionsScores,
+        topDimension: sortedDimensions[0],
+        secondDimension: sortedDimensions[1],
+        abnormalDimensions: dimensionsScores.filter(d => d.severity !== 'normal'),
+        moderateOrSevereDimensions: dimensionsScores.filter(d => d.severity === 'moderate' || d.severity === 'severe')
+      };
+    }
+
+    // ============== 结果报告 ==============
+    function renderResult(result) {
+      const interp = state.config.interpretation[result.averageSeverity.severity];
+      const html = `
+        <div class="result-overview">
+          <div class="overview-card ${result.averageSeverity.severity}">
+            <h4>心理健康综合指数</h4>
+            <div class="overview-value">${result.mentalHealthIndex}</div>
+            <div class="overview-label">满分100分，越高越好</div>
+          </div>
+          <div class="overview-card ${result.totalSeverity.severity}">
+            <h4>总分</h4>
+            <div class="overview-value">${result.totalScore}</div>
+            <div class="overview-label">${result.totalSeverity.label}</div>
+          </div>
+          <div class="overview-card ${result.averageSeverity.severity}">
+            <h4>总均分</h4>
+            <div class="overview-value">${result.averageScore.toFixed(2)}</div>
+            <div class="overview-label">${result.averageSeverity.label}</div>
+          </div>
+          <div class="overview-card">
+            <h4>阳性项目数</h4>
+            <div class="overview-value">${result.positiveCount}</div>
+            <div class="overview-label">共${state.config.questions.length}题</div>
+          </div>
+        </div>
+
+        <div class="result-interpretation">
+          <h3>综合评估</h3>
+          <p>${interp.replace(/{index}/g, result.mentalHealthIndex)}</p>
+          <p>
+            在${state.config.dimensions.length}个测评维度中，<strong>${result.topDimension.name}</strong>是您最需要关注的维度，
+            平均得分${result.topDimension.average.toFixed(2)}分（${result.topDimension.label}）。
+            ${result.abnormalDimensions.length > 1
+              ? `此外，<strong>${result.secondDimension.name}</strong>（${result.secondDimension.average.toFixed(2)}分，${result.secondDimension.label}）也需要关注。共有<strong>${result.abnormalDimensions.length}个维度</strong>出现异常，其中<strong>${result.moderateOrSevereDimensions.length}个维度</strong>达到中度及以上水平。`
+              : '值得欣慰的是，其他维度得分相对平稳，整体心理状态较为均衡。'}
+          </p>
+          <p>
+            从症状分布来看，您在${result.positiveCount > 0 ? `<strong>${result.positiveCount}个项目</strong>上存在症状表现` : '所有项目上均无异常表现'}，
+            阳性症状平均分为<strong>${result.positiveAverage.toFixed(2)}分</strong>。
+          </p>
+          <p><strong>温馨提示：</strong>${state.config.meta.disclaimer}</p>
+        </div>
+
+        <div class="result-chart">
+          <h3>维度雷达图</h3>
+          <div id="radarChart" style="width:100%;height:360px;"></div>
+        </div>
+
+        <div class="result-details">
+          <h3>重点关注维度</h3>
+          <div class="dimension-list">
+            ${result.dimensionsScores
+              .sort((a, b) => b.average - a.average)
+              .slice(0, 3)
+              .map((d, i) => `
+                <div class="dimension-item">
+                  <div class="dimension-header">
+                    <span class="dimension-rank">${i + 1}</span>
+                    <span class="dimension-name">${d.name}</span>
+                    <span class="dimension-score severity-${d.severity}">${d.average.toFixed(2)}分 · ${d.label}</span>
+                  </div>
+                  <p class="dimension-desc">${d.description}</p>
+                  <p class="dimension-advice"><strong>建议：</strong>${d.advice}</p>
+                </div>
+              `).join('')}
+          </div>
+        </div>
+
+        <div class="result-all">
+          <h3>各维度得分明细</h3>
+          <table class="dimension-table">
+            <thead><tr><th>维度</th><th>平均分</th><th>得分</th><th>题数</th><th>等级</th></tr></thead>
+            <tbody>
+              ${result.dimensionsScores.map(d => {
+                const dimConfig = state.config.dimensions.find(x => x.name === d.name);
+                return `
+                  <tr>
+                    <td>${d.name}</td>
+                    <td>${d.average.toFixed(2)}</td>
+                    <td>${d.sum}</td>
+                    <td>${dimConfig.indices.length}</td>
+                    <td><span class="badge severity-${d.severity}">${d.label}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      dom.resultContent.innerHTML = html;
+      drawRadarChart(result.dimensionsScores);
+    }
+
+    function drawRadarChart(dimensionsScores) {
+      const chartDom = document.getElementById('radarChart');
+      if (!chartDom) return;
+
+      if (typeof echarts !== 'undefined') {
+        const myChart = echarts.init(chartDom);
+        const option = {
+          color: [state.config.ui.primaryColor],
+          tooltip: { trigger: 'item' },
+          radar: {
+            indicator: dimensionsScores.map(d => ({ name: d.name, max: 5 })),
+            radius: '65%',
+            splitNumber: 5,
+            axisName: { color: '#333', fontSize: 12 }
+          },
+          series: [{
+            type: 'radar',
+            data: [{
+              value: dimensionsScores.map(d => parseFloat(d.average.toFixed(2))),
+              name: '您的得分',
+              areaStyle: { opacity: 0.3 },
+              lineStyle: { width: 2 }
+            }]
+          }]
+        };
+        myChart.setOption(option);
+        window.addEventListener('resize', () => myChart.resize());
+      } else {
+        chartDom.innerHTML = '<p style="text-align:center;color:#999;padding-top:80px;">图表库未加载，请检查网络连接</p>';
+      }
+    }
+
+    // ============== 分享图生成 ==============
+    function generateShareImage() {
+      if (!state.lastResult) return;
+      dom.shareModal.classList.remove('hidden');
+      dom.shareLoading.style.display = 'block';
+      dom.sharePreview.style.display = 'none';
+      dom.shareTip.style.display = 'none';
+      dom.shareError.style.display = 'none';
+
+      renderShareCard(state.lastResult);
+
+      waitForQrImage().then(() => {
+        if (typeof html2canvas === 'undefined') {
+          showShareError('分享图库未加载，请检查网络连接');
+          return;
+        }
+
+        html2canvas(dom.shareCard, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          logging: false
+        }).then(canvas => {
+          const dataUrl = canvas.toDataURL('image/png');
+          dom.sharePreviewImg.src = dataUrl;
+          dom.shareLoading.style.display = 'none';
+          dom.sharePreview.style.display = 'block';
+          dom.shareTip.style.display = 'block';
+        }).catch(err => {
+          console.error('生成分享图失败:', err);
+          showShareError('生成图片失败，请重试');
+        });
+      });
+    }
+
+    function waitForQrImage() {
+      return new Promise((resolve) => {
+        const qrUrl = state.config.share.qrCodeUrl || '';
+        if (!qrUrl || !dom.shareQrImg || dom.shareQrImg.style.display === 'none') {
+          resolve();
+          return;
+        }
+        if (dom.shareQrImg.complete && dom.shareQrImg.naturalWidth > 0) {
+          resolve();
+          return;
+        }
+        const onLoad = () => { dom.shareQrImg.removeEventListener('load', onLoad); dom.shareQrImg.removeEventListener('error', onLoad); resolve(); };
+        dom.shareQrImg.addEventListener('load', onLoad);
+        dom.shareQrImg.addEventListener('error', onLoad);
+      });
+    }
+
+    function renderShareCard(result) {
+      const sev = result.averageSeverity.severity;
+      dom.shareScoreValue.textContent = result.mentalHealthIndex;
+      dom.shareScoreValue.className = `share-score-value ${sev}`;
+      dom.shareScoreLevel.textContent = `${result.averageSeverity.label} · 总均分 ${result.averageScore.toFixed(2)}`;
+
+      const topDims = [...result.dimensionsScores]
+        .sort((a, b) => b.average - a.average)
+        .slice(0, 5);
+
+      dom.shareDimensions.innerHTML = topDims.map(d => {
+        const pct = Math.min((d.average / 5) * 100, 100);
+        return `
+          <div class="share-dim-item">
+            <div class="share-dim-name">${d.name}</div>
+            <div class="share-dim-bar-wrap">
+              <div class="share-dim-bar" style="width: ${pct}%;"></div>
+            </div>
+            <div class="share-dim-score">${d.average.toFixed(2)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const qrUrl = state.config.share.qrCodeUrl || '';
+      if (qrUrl && dom.shareQrImg && dom.shareQrPlaceholder) {
+        dom.shareQrImg.src = qrUrl;
+        dom.shareQrImg.style.display = 'block';
+        dom.shareQrPlaceholder.style.display = 'none';
+      } else if (dom.shareQrImg && dom.shareQrPlaceholder) {
+        dom.shareQrImg.style.display = 'none';
+        dom.shareQrImg.src = '';
+        dom.shareQrPlaceholder.style.display = 'block';
+      }
+    }
+
+    function showShareError(msg) {
+      dom.shareLoading.style.display = 'none';
+      dom.shareError.textContent = msg;
+      dom.shareError.style.display = 'block';
+    }
+
+    // ============== 历史记录 ==============
+    function saveResult(result) {
+      const key = `shell_history_${state.config.meta.id}`;
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      history.push({
+        date: result.date,
+        testCode: result.testCode,
+        totalScore: result.totalScore,
+        averageScore: result.averageScore,
+        totalSeverityLabel: result.totalSeverity.label,
+        averageSeverityLabel: result.averageSeverity.label,
+        mentalHealthIndex: result.mentalHealthIndex
+      });
+      localStorage.setItem(key, JSON.stringify(history));
+    }
+
+    function loadHistory() {
+      const key = `shell_history_${state.config.meta.id}`;
+      const history = JSON.parse(localStorage.getItem(key) || '[]').reverse();
+
+      dom.historyList.innerHTML = '';
+      if (history.length === 0) {
+        dom.historyList.innerHTML = '<div class="no-history">暂无历史记录</div>';
+        return;
+      }
+
+      history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div class="history-date">${formatDate(item.date)}</div>
+          <div>总分: <span class="history-score">${item.totalScore}</span> (${item.totalSeverityLabel})</div>
+          <div>均分: ${item.averageScore.toFixed(2)} (${item.averageSeverityLabel}) · 指数: ${item.mentalHealthIndex}</div>
+        `;
+        dom.historyList.appendChild(div);
+      });
+    }
+
+    function clearHistory() {
+      if (!confirm('确定要清除所有历史记录吗？')) return;
+      const key = `shell_history_${state.config.meta.id}`;
+      localStorage.removeItem(key);
+      loadHistory();
+    }
+
+    // ============== 重新测试 ==============
+    function restartTest() {
+      state.currentIndex = 0;
+      state.answers = new Array(state.config.questions.length).fill(0);
+      state.testFinished = false;
+      state.testStarted = true;
+      state.lastResult = null;
+      goToPage(1);
+      renderQuestion();
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
